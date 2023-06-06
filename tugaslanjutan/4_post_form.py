@@ -129,34 +129,46 @@ def login():
 	conn = get_db_connection()
 	cur = conn.cursor()
 	cur2 = conn.cursor()
+	curn = conn.cursor()
+	curpub = conn.cursor()
 
-	strQuery = "SELECT * FROM public.user where username='%s' and password='%s';" % (username, password)
-	enkrip_data = enkripsi()
-	cur2.execute("SELECT password FROM public.user where password = '%s';"%(password))
+	# strQuery = "SELECT * FROM datauser where username='%s' and password='%s';" % (username, password)
+	nQuery = "SELECT n_num FROM datauser where username='%s';" % (username)
+	pubQuery = "SELECT p_num FROM datauser where username='%s';" % (username)
+	cur2.execute("SELECT password FROM datauser where username = '%s';"%(username))
+	curn.execute(nQuery)
+	curpub.execute(pubQuery
+	)
 	filterquery = cur2.fetchone()
+	ndata = curn.fetchone()
+	pdata = curpub.fetchone()
 
-	print('strQuery: ',strQuery)
-	cur.execute(strQuery)
-	user = cur.fetchall()
-	
-	count = len(user)
-	print('count: ', count)
+
+
+
+	# print('strQuery: ',strQuery)
+	# cur.execute(strQuery)
+	# user = cur.fetchall()
+	# user = 0
+	# count = len(user)
+	# print('count: ', count)
 
 	cleaned_text = filterquery[0].replace("'", "").replace(",", "")
-	print(dekripsi(4717,861,cleaned_text))
+	clear_n = ndata[0]
+	clear_pub = ndata[0]
+	print(cleaned_text)
+	print(clear_n)
+	print(clear_pub)
+	print(dekripsi(clear_n,1457,cleaned_text))
 
-
-        
-		
-	
-	if count > 0:
-		access_token = create_access_token(identity=username)
-		print('access_token: ', access_token),
-		response = make_response("logged in success")
-		kreate_key()
-		response.set_cookie('access_token',value=access_token,httponly=True)
-		return jsonify({"msg": access_token, 'berhasil':1}), 200
-	print('Failed...')
+	# if count > 0:
+	# 	access_token = create_access_token(identity=username)
+	# 	print('access_token: ', access_token),
+	# 	response = make_response("logged in success")
+	# 	kreate_key()
+	# 	response.set_cookie('access_token',value=access_token,httponly=True)
+	# 	return jsonify({"msg": access_token, 'berhasil':1}), 200
+	# print('Failed...')
 	return jsonify({"msg": "Bad username or password", 'success':0})
 
 	
@@ -175,7 +187,7 @@ def register():
 
 	conn = get_db_connection()
 	cur = conn.cursor()
-	strQuery = "INSERT INTO public.user (username,password) VALUES ('%s','%s')" % (username,enkripsi(kunci[0],kunci[1],password))
+	strQuery = "INSERT INTO datauser (username,password,n_num,p_num) VALUES ('%s','%s',%s,%s)" % (username,enkripsi(kunci[0],kunci[1],password),kunci[0],kunci[1])
 	print(dekripsi(kunci[0],kunci[2],enkripsi(kunci[0],kunci[1],password)))
 	cur.execute(strQuery)
 	conn.commit()
