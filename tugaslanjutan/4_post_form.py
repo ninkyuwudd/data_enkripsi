@@ -150,36 +150,27 @@ def login():
 @app.route('/register', methods =['GET', 'POST'])
 def register():
 
-	if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
-		username = request.form['username']
-		password = request.form['password']
-
-		
-
-		conn = get_db_connection()
-		cur = conn.cursor()
-		strQuery = "INSERT INTO public.user (username,password) VALUES ('%s','%s')" % (username,enkripsi(7913,311,password))
-		cur.execute(strQuery)
-		conn.commit()
-	return render_template("form.html")
-		
-	# strQuery = "SELECT * FROM public.user where username='%s' and password='%s';" % (username, password)
-	# print('strQuery: ',strQuery)
-	# cur.execute(strQuery)
-	# user = cur.fetchall()
+	# if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
+	# username = request.form['username']
+	# password = request.form['password']
+	username = request.json.get('username')
+	password = request.json.get('password')
+	print('username: ', username)
+	print('password: ', password)
 	
-	# count = len(user)
-	# print('count: ', count)
+
+	kunci = kreate_key()
 	
-	# if count > 0:
-	# 	access_token = create_access_token(identity=username)
-	# 	print('access_token: ', access_token),
-	# 	response = make_response("logged in success")
-	# 	response.set_cookie('access_token',value=access_token,httponly=True)
+
+	conn = get_db_connection()
+	cur = conn.cursor()
+	strQuery = "INSERT INTO public.user (username,password) VALUES ('%s','%s')" % (username,enkripsi(kunci[0],kunci[1],password))
+	print(dekripsi(kunci[0],kunci[2],enkripsi(kunci[0],kunci[1],password)))
+	cur.execute(strQuery)
+	conn.commit()
+
+	return jsonify({"msg":kunci[2]})
 		
-	# 	return jsonify({"msg": access_token, 'berhasil':1}), 200
-	# print('Failed...')
-	# return jsonify({"msg": "Bad username or password", 'success':0})
 	
 	
 

@@ -66,26 +66,75 @@
 		});
 
 
-		function getUser() {
-			const token = localStorage.getItem('token');
-			$.ajax({
-				type: "POST",
-				url: "/register",
-				headers: {
-					Authorization: 'Bearer ' + token
-					// $("#str_token").html()
-				},
-				dataType: 'json',
-				success: function (result, status, xhr) {
-					console.log(result);
-					$("#login_as").html(result['logged_in_as'].toString());
 
-				},
-				error: function (xhr, status, error) {
-					alert(error);
-				}
-			});
+		function generateFile(x) {
+			// Konten file yang ingin di-generate
+			var fileContent = x;
+
+			// Membuat objek Blob dengan konten file
+			var blob = new Blob([fileContent], { type: "text/plain" });
+
+			// Membuat URL objek Blob
+			var url = window.URL.createObjectURL(blob);
+
+			// Membuat elemen <a> untuk mengunduh file
+			var link = document.createElement("a");
+			link.href = url;
+			link.download = "file.txt"; // Nama file yang akan diunduh
+
+			// Menambahkan elemen <a> ke dalam dokumen
+			document.body.appendChild(link);
+
+			// Mengklik elemen <a> secara otomatis untuk memulai unduhan
+			link.click();
+
+			// Menghapus elemen <a> setelah selesai diunduh
+			document.body.removeChild(link);
 		}
+
+
+
+		$(function () {
+			$('#btn_regis').click(function (e) {
+				e.preventDefault();
+				v_data =
+				{
+					"username": $("#username2").val(),
+					"password": $("#password2").val()
+				};
+
+				$.ajax({
+					url: '/register',
+					data: JSON.stringify(v_data),
+					processData: false,
+					type: 'POST',
+					dataType: 'json',
+					contentType: 'application/json',
+					success: function (response) {
+						console.log(response);
+
+						console.log(JSON.stringify(response['msg']))
+						generateFile(JSON.stringify(response['msg']))
+
+
+						return false;
+					},
+					error: function (error) {
+						console.log(error);
+
+						return false;
+					}
+				});
+			});
+		});
+
+
+
+
+
+
+
+		
 
 
 		function autori(){
@@ -103,28 +152,6 @@
 			$("#view_login").hide();
 			$("#register").hide();
 		}
-
-
-
-		// fetch('/protected', {
-		// 	headers: {
-		// 		Authorization: 'Bearer ' + $("#str_token").html()
-		// 	}
-		// })
-		// 	.then(response => {
-		// 		if (response.ok) {
-		// 			return response.json();
-		// 		} else {
-		// 			throw new Error('Invalid token');
-		// 		}
-		// 	})
-		// 	.then(data => {
-		// 		document.getElementById('login_as').textContent = data.username;
-		// 	})
-		// 	.catch(error => {
-		// 		console.error(error);
-		// 		window.location.href = '/';
-		// 	});
 		}
 
 		function regis() {
@@ -295,14 +322,14 @@
 						<div class="form-data" v-if="!submitted">
 							<h2>Login</h2>
 							<div class="forms-inputs mb-4"> <span>username</span>
-								<input autocomplete="off" name="username" id="username" type="text" value="wudd"
+								<input autocomplete="off" name="username" id="username2" type="text" value="wudd"
 									required v-model="email"
 									v-bind:class="{'form-control':true, 'is-invalid' : !validEmail(email) && emailBlured}"
 									v-on:blur="emailBlured = true">
 								<div class="invalid-feedback">A valid email is required!</div>
 							</div>
 							<div class="forms-inputs mb-4"> <span>Password</span>
-								<input autocomplete="off" name="password" id="password" type="password" value="wudd123"
+								<input autocomplete="off" name="password" id="password2" type="password" value="wudd123"
 									required v-model="password"
 									v-bind:class="{'form-control':true, 'is-invalid' : !validPassword(password) && passwordBlured}"
 									v-on:blur="passwordBlured = true">
@@ -322,26 +349,70 @@
 		</div>
 
 	</div>
+
+
+
+
 	<div class="register" id="register">
-			
 
-						<div class="form-data" v-if="!submitted">
-							<h2>Register</h2>
-							<form action="{{ url_for('register') }}" method="post">
-								<div class="msg">{{ msg }}</div>
-								  <input id="username" name="username" type="text" placeholder="Enter Your Username" class="textbox"/></br></br>
-								  <input id="password" name="password" type="password" placeholder="Enter Your Password" class="textbox"/></br></br></br>
-								  <input type="submit" class="btn" value="Sign In"></br></br>
-							  </form>
 
-							
-							
-					
-					
-				
+		<div class="form-data" v-if="!submitted">
+
+			<h2>Register</h2>
+
+			<div class="forms-inputs mb-4"> <span>username</span>
+				<input autocomplete="off" name="username" id="username" type="text" value="wudd"
+					required v-model="email"
+					v-bind:class="{'form-control':true, 'is-invalid' : !validEmail(email) && emailBlured}"
+					v-on:blur="emailBlured = true">
+				<div class="invalid-feedback">A valid username is required!</div>
 			</div>
+			<div class="forms-inputs mb-4"> <span>Password</span>
+				<input autocomplete="off" name="password" id="password" type="password" value="wudd123"
+					required v-model="password"
+					v-bind:class="{'form-control':true, 'is-invalid' : !validPassword(password) && passwordBlured}"
+					v-on:blur="passwordBlured = true">
+				<div class="invalid-feedback">Password must be 8 character!</div>
+			</div>
+			<div class="mb-3"> <button v-on:click.stop.prevent="submit" id="btn_regis"
+					class="btn btn-dark w-100" >register</button> </div>
+
+		</div>
 
 	</div>
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	<!-- <div class="register" id="register">
+
+
+		<div class="form-data" v-if="!submitted">
+			<h2>Register</h2>
+			<form action="{{ url_for('register') }}" method="post">
+				<div class="msg">{{ msg }}</div>
+				<input id="username" name="username" type="text" placeholder="Enter Your Username"
+					class="textbox" /></br></br>
+				<input id="password" name="password" type="password" placeholder="Enter Your Password"
+					class="textbox" /></br></br></br>
+				<input id="btn_regis" type="submit" class="btn" value="Sign In"></br></br>
+			</form>
+
+		</div>
+
+	</div> -->
+
+
+
 	<div class="parallax" id="parralax" style="display: none;width: 100% !important;"></div>
 	<div id="view_user" style="display: none;background-color: white !important;margin-top: 20px;"
 		class="shadow p-3 mb-5 bg-body rounded">
