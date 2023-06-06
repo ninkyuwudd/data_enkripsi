@@ -116,6 +116,9 @@
 						console.log(JSON.stringify(response['msg']))
 						generateFile(JSON.stringify(response['msg']))
 
+						$("#view_login").show();
+						$("#register").hide();
+
 
 						return false;
 					},
@@ -322,14 +325,14 @@
 						<div class="form-data" v-if="!submitted">
 							<h2>Login</h2>
 							<div class="forms-inputs mb-4"> <span>username</span>
-								<input autocomplete="off" name="username" id="username2" type="text" value="wudd"
+								<input autocomplete="off" name="username" id="username" type="text"
 									required v-model="email"
 									v-bind:class="{'form-control':true, 'is-invalid' : !validEmail(email) && emailBlured}"
 									v-on:blur="emailBlured = true">
 								<div class="invalid-feedback">A valid email is required!</div>
 							</div>
 							<div class="forms-inputs mb-4"> <span>Password</span>
-								<input autocomplete="off" name="password" id="password2" type="password" value="wudd123"
+								<input autocomplete="off" name="password" id="password" type="password"
 									required v-model="password"
 									v-bind:class="{'form-control':true, 'is-invalid' : !validPassword(password) && passwordBlured}"
 									v-on:blur="passwordBlured = true">
@@ -361,14 +364,14 @@
 			<h2>Register</h2>
 
 			<div class="forms-inputs mb-4"> <span>username</span>
-				<input autocomplete="off" name="username" id="username" type="text" value="wudd"
+				<input autocomplete="off" name="username" id="username2" type="text" 
 					required v-model="email"
 					v-bind:class="{'form-control':true, 'is-invalid' : !validEmail(email) && emailBlured}"
 					v-on:blur="emailBlured = true">
 				<div class="invalid-feedback">A valid username is required!</div>
 			</div>
 			<div class="forms-inputs mb-4"> <span>Password</span>
-				<input autocomplete="off" name="password" id="password" type="password" value="wudd123"
+				<input autocomplete="off" name="password" id="password2" type="password" 
 					required v-model="password"
 					v-bind:class="{'form-control':true, 'is-invalid' : !validPassword(password) && passwordBlured}"
 					v-on:blur="passwordBlured = true">

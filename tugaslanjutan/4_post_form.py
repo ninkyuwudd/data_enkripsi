@@ -7,6 +7,7 @@ from flask import request, render_template,make_response
 from flask_cors import CORS
 import psycopg2
 import sympy
+from bcrypt import checkpw
 from psycopg2.extras import RealDictCursor
 
 from flask_jwt_extended import create_access_token
@@ -127,13 +128,26 @@ def login():
 	
 	conn = get_db_connection()
 	cur = conn.cursor()
+	cur2 = conn.cursor()
+
 	strQuery = "SELECT * FROM public.user where username='%s' and password='%s';" % (username, password)
+	enkrip_data = enkripsi()
+	cur2.execute("SELECT password FROM public.user where password = '%s';"%(password))
+	filterquery = cur2.fetchone()
+
 	print('strQuery: ',strQuery)
 	cur.execute(strQuery)
 	user = cur.fetchall()
 	
 	count = len(user)
 	print('count: ', count)
+
+	cleaned_text = filterquery[0].replace("'", "").replace(",", "")
+	print(dekripsi(4717,861,cleaned_text))
+
+
+        
+		
 	
 	if count > 0:
 		access_token = create_access_token(identity=username)
@@ -150,9 +164,6 @@ def login():
 @app.route('/register', methods =['GET', 'POST'])
 def register():
 
-	# if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
-	# username = request.form['username']
-	# password = request.form['password']
 	username = request.json.get('username')
 	password = request.json.get('password')
 	print('username: ', username)
