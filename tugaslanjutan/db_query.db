@@ -1,0 +1,37 @@
+NOTE : ini adalah query data tabel untuk pgadmin, copy lalu paste pada query tools pada pgqdmin
+
+
+
+
+
+CREATE TABLE food (
+  id SERIAL NOT NULL,
+  food_name VARCHAR(255) NOT NULL,
+  region VARCHAR(255) NOT NULL
+)
+
+create table drink(
+id  serial,
+	name varchar(100) not null,
+	price int not null
+)
+
+INSERT INTO public.drink(
+	 name, price)
+	VALUES ( 'jus melon', 5000);
+
+
+INSERT INTO public.food(
+	 food_name, region)
+	VALUES ( 'pizza', 'italia');
+
+
+create tabel user(
+	id serial,
+	username varchar(100) not null,
+	password varchar(100) not null
+)
+
+INSERT INTO public."user"(
+	 username, password)
+	VALUES ('dodit', 'dodittamvan123');
