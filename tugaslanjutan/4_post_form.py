@@ -125,6 +125,23 @@ def loginForm():
     return render_template('form.html')
 
 
+def text_to_ascii(text):
+    ascii_list = []
+    for char in text:
+        ascii_value = ord(char)
+        ascii_list.append(ascii_value)
+    return ascii_list
+
+
+def ascii_to_text(ascii_list):
+    text = ""
+    for ascii_value in ascii_list:
+        if ascii_value != 0: 
+            character = chr(ascii_value)
+            text += character
+    return text
+
+
 @app.route("/login_json", methods=["POST"])
 def login():
 	username = request.json.get('username')
@@ -156,10 +173,19 @@ def login():
 	print(len(getpass))
 	print(len(password))
 
-	if getpass == password:
+
+	input_text = getpass
+	ascii_result = text_to_ascii(input_text)
+	asci_text = ascii_to_text(ascii_result)
+	print(len(asci_text))
+	print("Hasil konversi ASCII:", asci_text)
+
+
+
+	if asci_text == password:
 		print("benar")
 
-	if str(getpass) == str(password):
+	if asci_text == str(password):
 		access_token = create_access_token(identity=username)
 		print('access_token: ', access_token),
 		response = make_response("logged in success")
