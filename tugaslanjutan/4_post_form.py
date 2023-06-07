@@ -1,6 +1,7 @@
 import base64
 import math
 import codecs
+
 from flask import Flask
 from flask import jsonify
 from flask import redirect
@@ -209,7 +210,7 @@ def text_to_ascii(text):
 def ascii_to_text(ascii_list):
     text = ""
     for ascii_value in ascii_list:
-        if ascii_value != 0: 
+        if ascii_value != 92: 
             character = chr(ascii_value)
             text += character
     return text
@@ -238,7 +239,7 @@ def login():
 	clear_n = ndata[0]
 	# clear_pub = ndata[0]
 
-	create_dekrip_data = csr_dekripsi(clmn_transposition_decipher(dekripsi(clear_n,int(key),cleaned_text), "139")) 
+	create_dekrip_data = csr_dekripsi(dekripsi(clear_n,int(key),cleaned_text))
 
 	print(cleaned_text)
 	print(clear_n)
@@ -249,10 +250,11 @@ def login():
 	# print(len(getpass))
 	print(len(password))
 
-
+    
 	input_text = create_dekrip_data
 	ascii_result = text_to_ascii(input_text)
 	asci_text = ascii_to_text(ascii_result)
+	print(ascii_result)
 	print(len(asci_text))
 	print("Hasil konversi ASCII:", asci_text)
 
@@ -283,7 +285,7 @@ def register():
 	
 
 	kunci = kreate_key()
-	create_enrkip_data = enkripsi(kunci[0],kunci[1],clmn_transposition_enkripsi(csr_enkripsi(password), "138"))
+	create_enrkip_data = enkripsi(kunci[0],kunci[1],csr_enkripsi(password))
 	
 
 	conn = get_db_connection()
