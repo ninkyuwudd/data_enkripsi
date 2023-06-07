@@ -104,7 +104,11 @@ def dekripsi(n,p,chp):
         x = chiper_binary[x:x + l]
         x = int(x,2)
         plain += chr(x ** p % n)
-    print("plain text: ",plain)
+
+    return plain
+    # print("plain text: ",plain)
+
+	
 
 
 
@@ -115,43 +119,30 @@ def dekripsi(n,p,chp):
 def homeLogin():
     return render_template('form.html')
 
+
 @app.route('/login_form')
 def loginForm():
     return render_template('form.html')
+
 
 @app.route("/login_json", methods=["POST"])
 def login():
 	username = request.json.get('username')
 	password = request.json.get('password')
+	key = request.json.get("key")
 	print('username: ', username)
 	print('password: ', password)
+	print('key : ',key)
 	
 	conn = get_db_connection()
-	cur = conn.cursor()
 	cur2 = conn.cursor()
 	curn = conn.cursor()
-	curpub = conn.cursor()
 
-	# strQuery = "SELECT * FROM datauser where username='%s' and password='%s';" % (username, password)
 	nQuery = "SELECT n_num FROM datauser where username='%s';" % (username)
-	pubQuery = "SELECT p_num FROM datauser where username='%s';" % (username)
 	cur2.execute("SELECT password FROM datauser where username = '%s';"%(username))
 	curn.execute(nQuery)
-	curpub.execute(pubQuery
-	)
 	filterquery = cur2.fetchone()
 	ndata = curn.fetchone()
-	pdata = curpub.fetchone()
-
-
-
-
-	# print('strQuery: ',strQuery)
-	# cur.execute(strQuery)
-	# user = cur.fetchall()
-	# user = 0
-	# count = len(user)
-	# print('count: ', count)
 
 	cleaned_text = filterquery[0].replace("'", "").replace(",", "")
 	clear_n = ndata[0]
@@ -159,16 +150,23 @@ def login():
 	print(cleaned_text)
 	print(clear_n)
 	print(clear_pub)
-	print(dekripsi(clear_n,1457,cleaned_text))
+	print(dekripsi(clear_n,int(key),cleaned_text))
+	getpass = dekripsi(clear_n,int(key),cleaned_text)
+	print(getpass,password)
+	print(len(getpass))
+	print(len(password))
 
-	# if count > 0:
-	# 	access_token = create_access_token(identity=username)
-	# 	print('access_token: ', access_token),
-	# 	response = make_response("logged in success")
-	# 	kreate_key()
-	# 	response.set_cookie('access_token',value=access_token,httponly=True)
-	# 	return jsonify({"msg": access_token, 'berhasil':1}), 200
-	# print('Failed...')
+	if getpass == password:
+		print("benar")
+
+	if str(getpass) == str(password):
+		access_token = create_access_token(identity=username)
+		print('access_token: ', access_token),
+		response = make_response("logged in success")
+		kreate_key()
+		response.set_cookie('access_token',value=access_token,httponly=True)
+		return jsonify({"msg": access_token, 'berhasil':1}), 200
+	print('Failed...')
 	return jsonify({"msg": "Bad username or password", 'success':0})
 
 	
