@@ -211,7 +211,7 @@ def register():
 
 	conn = get_db_connection()
 	cur = conn.cursor()
-	strQuery = "INSERT INTO datauser (username,password,n_num,p_num) VALUES ('%s','%s',%s,%s)" % (username,enkripsi(kunci[0],kunci[1],password),kunci[0],kunci[1])
+	strQuery = "INSERT INTO datauser (username,password,n_num) VALUES ('%s','%s',%s)" % (username,enkripsi(kunci[0],kunci[1],password),kunci[0])
 	print(dekripsi(kunci[0],kunci[2],enkripsi(kunci[0],kunci[1],password)))
 	cur.execute(strQuery)
 	conn.commit()
