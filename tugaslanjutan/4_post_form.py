@@ -31,12 +31,6 @@ def get_db_connection():
 
 
 
-
-
-
-
-
-
 def kreate_key():
     p1 = sympy.randprime(2 ** 4, 2 ** 8)
     p2 = sympy.randprime(2 ** 4, 2 ** 8)
@@ -164,7 +158,7 @@ def text_to_ascii(text):
 def ascii_to_text(ascii_list):
     text = ""
     for ascii_value in ascii_list:
-        if ascii_value != 92: 
+        if ascii_value != 0: 
             character = chr(ascii_value)
             text += character
     return text
