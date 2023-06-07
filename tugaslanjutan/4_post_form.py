@@ -29,6 +29,77 @@ def get_db_connection():
                             password='beginer1383')
     return conn
 
+def kreate_key():
+    p1 = sympy.randprime(2 ** 4, 2 ** 8)
+    p2 = sympy.randprime(2 ** 4, 2 ** 8)
+    n = p1 * p2
+
+    print("N =", n)
+    
+    pn = (p1 - 1) * (p2 - 1)
+    e = sympy.randprime(1, pn)
+    while math.gcd(e,pn) > 1:
+        e = sympy.randprime(1,pn)
+
+    print("Public key =", e)
+
+    d = (pn + 1) / e
+    i = 1
+
+    while d % 1 > 0:
+        i += 1
+        d = (i * pn + 1) / e
+    d = int(d)
+    return [n,e,d]
+
+
+
+def enkripsirsa(n,p,plain):
+
+    l = math.ceil(math.log2(n))
+
+    plain_byte = bytearray(plain,"utf-8")
+    chiper_binary = ""
+    for i in plain_byte:
+        i = i ** p % n
+        chiper_binary += format(i,"0" + str(l) + "b")
+
+    while len(chiper_binary) % 8 > 0:
+        chiper_binary += "0"
+
+        #format ke binary ke base64
+    chiper_byte = bytearray()
+    for x in range(0, len(chiper_binary), 8):
+        tmp = chiper_binary[x:x + 8]
+        tmp = int(tmp, 2)
+        chiper_byte.append(tmp)
+
+    chiper_base64 = base64.b64encode(chiper_byte)
+    return chiper_base64.decode("ascii")
+    # print("enkripsi message", chiper_base64.decode("ascii"))
+
+
+
+def dekripsirsa(n,p,chp):
+    l = math.ceil(math.log2(n))
+
+    chiper = chp.encode("ascii")
+    chiper_byte = base64.b64decode(chiper)
+    chiper_binary = ""
+
+    for x in chiper_byte:
+        chiper_binary += format(x,"08b")
+
+    #dekirpsi
+    plain = ""
+    for x in range(0, len(chiper_binary),l):
+        x = chiper_binary[x:x + l]
+        x = int(x,2)
+        plain += chr(x ** p % n)
+    # print("plain text: ",plain)
+    return plain
+
+
 def generate_key():
     # Menghasilkan kunci acak dengan mengacak urutan karakter alfabet
     import random
@@ -105,6 +176,21 @@ def decriptbasic(inputchiper):
     return res2
 
 
+def text_to_ascii(text):
+    ascii_list = []
+    for char in text:
+        ascii_value = ord(char)
+        ascii_list.append(ascii_value)
+    return ascii_list
+
+
+def ascii_to_text(ascii_list):
+    text = ""
+    for ascii_value in ascii_list:
+        if ascii_value != 92: 
+            character = chr(ascii_value)
+            text += character
+    return text
 
 
 	
@@ -119,23 +205,6 @@ def loginForm():
     return render_template('form.html')
 
 
-def text_to_ascii(text):
-    ascii_list = []
-    for char in text:
-        ascii_value = ord(char)
-        ascii_list.append(ascii_value)
-    return ascii_list
-
-
-def ascii_to_text(ascii_list):
-    text = ""
-    for ascii_value in ascii_list:
-        if ascii_value != 0: 
-            character = chr(ascii_value)
-            text += character
-    return text
-
-
 @app.route("/login_json", methods=["POST"])
 def login():
 	username = request.json.get('username')
@@ -144,52 +213,56 @@ def login():
 	print('username: ', username)
 	print('password: ', password)
 	print('key : ',key)
-	
+
+	slice_key = [key[:26],key[26:]]
+	print(slice_key)
+	print("sudah dapat key")
 	conn = get_db_connection()
 	cur2 = conn.cursor()
 	curn = conn.cursor()
+	print("koneksi aman")
 
 	nQuery = "SELECT n_num FROM datauser where username='%s';" % (username)
 	cur2.execute("SELECT password FROM datauser where username = '%s';"%(username))
 	curn.execute(nQuery)
 	filterquery = cur2.fetchone()
 	ndata = curn.fetchone()
+	print("fetcth query aman")
 
 	cleaned_text = filterquery[0].replace("'", "").replace(",", "")
 	clear_n = ndata[0]
-	# clear_pub = ndata[0]
 
-	create_dekrip_data = (decrypt(decryptsubti(decriptbasic(cleaned_text),key), 3))
+	print("ngereplace aman")
 
+	create_dekrip_data = (decrypt(decryptsubti(decriptbasic(dekripsirsa(clear_n,int(slice_key[1]),cleaned_text)),slice_key[0]), 5))
+
+	print("dekripsi aman")
 	print(cleaned_text)
 	print(clear_n)
-	# print(clear_pub)
-	# print(dekripsi(clear_n,int(key),cleaned_text))
-	# getpass = dekripsi(clear_n,int(key),cleaned_text)
 	print(create_dekrip_data)
-	# print(len(getpass))
 	print(len(password))
 
-    
 	input_text = create_dekrip_data
 	ascii_result = text_to_ascii(input_text)
 	asci_text = ascii_to_text(ascii_result)
+
 	print(ascii_result)
 	print(len(asci_text))
 	print("Hasil konversi ASCII:", asci_text)
-
-
 
 	if asci_text == password:
 		print("benar")
 
 	if asci_text == str(password):
 		access_token = create_access_token(identity=username)
+
 		print('access_token: ', access_token),
+
 		response = make_response("logged in success")
-		# kreate_key()
 		response.set_cookie('access_token',value=access_token,httponly=True)
+
 		return jsonify({"msg": access_token, 'berhasil':1}), 200
+
 	print('Failed...')
 	return jsonify({"msg": "Bad username or password", 'success':0})
 
@@ -204,18 +277,21 @@ def register():
 	print('password: ', password)
 	
 
-	kunci = generate_key()
-	create_enrkip_data = enkripsibasic(encryptsubti(encrypt(password, 3),kunci))
+	kunci = kreate_key()
+	subkey= generate_key()
+	create_enrkip_data = enkripsirsa(kunci[0],kunci[1],enkripsibasic(encryptsubti(encrypt(password, 5),subkey)))
 	
 
 	conn = get_db_connection()
 	cur = conn.cursor()
-	strQuery = "INSERT INTO datauser (username,password,n_num) VALUES ('%s','%s',%s)" % (username,create_enrkip_data,1)
+	strQuery = "INSERT INTO datauser (username,password,n_num) VALUES ('%s','%s',%s)" % (username,create_enrkip_data,kunci[0])
 	# print(dekripsi(kunci[0],kunci[2],enkripsi(kunci[0],kunci[1],password)))
 	cur.execute(strQuery)
 	conn.commit()
 
-	return jsonify({"msg":kunci})
+	allkey = subkey + str(kunci[2]) 
+
+	return jsonify({"msg": allkey})
 		
 	
 	
