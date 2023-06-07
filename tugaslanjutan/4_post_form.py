@@ -31,75 +31,9 @@ def get_db_connection():
 
 
 
-def csr_enkripsi(text):
-    if len(text) > 1 :
-        return chr((ord(text[0])-32+3)%95+32) + csr_enkripsi(text[1:])
-    else:
-        return chr((ord(text[0])-32+3)%95+32)
-
-def csr_dekripsi(text):
-    if len(text) > 1:
-        return chr((ord(text[0])-32-3)%95+32) + csr_dekripsi(text[1:])
-    else:
-        return chr((ord(text[0])-32-3)%95+32)
 
 
-def clmn_transposition_enkripsi(text, key):
-    # Mengubah teks menjadi representasi heksadesimal atau base64
-    encoded_text = codecs.encode(text.encode('utf-8'), 'hex').decode('utf-8')  # Untuk heksadesimal
-    # encoded_text = codecs.encode(text.encode('utf-8'), 'base64').decode('utf-8')  # Untuk base64
 
-    # Menyusun representasi teks menjadi matriks kolom
-    columns = len(key)
-    rows = (len(encoded_text) + columns - 1) // columns
-    matrix = [[''] * columns for _ in range(rows)]
-    index = 0
-    for i in range(rows):
-        for j in range(columns):
-            if index < len(encoded_text):
-                matrix[i][j] = encoded_text[index]
-                index += 1
-
-    # Mengubah urutan kolom berdasarkan kunci
-    sorted_columns = sorted(range(columns), key=lambda k: key[k])
-    transposed_matrix = [[matrix[i][j] for j in sorted_columns] for i in range(rows)]
-
-    # Menghasilkan ciphertext dari matriks yang diubah
-    ciphertext = ''
-    for j in range(columns):
-        for i in range(rows):
-            ciphertext += transposed_matrix[i][j]
-
-    return ciphertext
-
-
-def clmn_transposition_decipher(ciphertext, key):
-    # Menghitung jumlah baris dan kolom berdasarkan panjang ciphertext dan kunci
-    columns = len(key)
-    rows = len(ciphertext) // columns
-
-    # Mengubah urutan kolom berdasarkan kunci
-    sorted_columns = sorted(range(columns), key=lambda k: key[k])
-
-    # Menghasilkan matriks berdasarkan ciphertext dan urutan kolom yang telah diubah
-    matrix = [[''] * columns for _ in range(rows)]
-    index = 0
-    for j in sorted_columns:
-        for i in range(rows):
-            matrix[i][j] = ciphertext[index]
-            index += 1
-
-    # Menggabungkan matriks menjadi teks terenkripsi
-    encoded_text = ''
-    for i in range(rows):
-        for j in range(columns):
-            encoded_text += matrix[i][j]
-
-    # Mendekode teks terenkripsi menjadi teks biasa
-    plaintext = codecs.decode(encoded_text.encode('utf-8'), 'hex').decode('utf-8')  # Untuk heksadesimal
-    # plaintext = codecs.decode(encoded_text.encode('utf-8'), 'base64').decode('utf-8')  # Untuk base64
-
-    return plaintext
 
 
 
@@ -130,8 +64,6 @@ def kreate_key():
     return [n,e,d]
     
 	
-
-
 
 enkripsitext = ""
 def enkripsi(n,p,plain):
@@ -184,6 +116,28 @@ def dekripsi(n,p,chp):
 
 	
 
+def encryptshift(text, shift):
+    encrypted_text = ""
+    for char in text:
+        if char.isalpha():
+            ascii_offset = ord('a') if char.islower() else ord('A')
+            encrypted_char = chr((ord(char) - ascii_offset + shift) % 26 + ascii_offset)
+            encrypted_text += encrypted_char
+        else:
+            encrypted_text += char
+    return encrypted_text
+
+
+def decryptshift(text, shift):
+    decrypted_text = ""
+    for char in text:
+        if char.isalpha():
+            ascii_offset = ord('a') if char.islower() else ord('A')
+            decrypted_char = chr((ord(char) - ascii_offset - shift) % 26 + ascii_offset)
+            decrypted_text += decrypted_char
+        else:
+            decrypted_text += char
+    return decrypted_text
 
 
 
@@ -239,7 +193,7 @@ def login():
 	clear_n = ndata[0]
 	# clear_pub = ndata[0]
 
-	create_dekrip_data = csr_dekripsi(dekripsi(clear_n,int(key),cleaned_text))
+	create_dekrip_data = decryptshift(dekripsi(clear_n,int(key),cleaned_text),3)
 
 	print(cleaned_text)
 	print(clear_n)
@@ -285,13 +239,13 @@ def register():
 	
 
 	kunci = kreate_key()
-	create_enrkip_data = enkripsi(kunci[0],kunci[1],csr_enkripsi(password))
+	create_enrkip_data = enkripsi(kunci[0],kunci[1],encryptshift(password,3))
 	
 
 	conn = get_db_connection()
 	cur = conn.cursor()
 	strQuery = "INSERT INTO datauser (username,password,n_num) VALUES ('%s','%s',%s)" % (username,create_enrkip_data,kunci[0])
-	print(dekripsi(kunci[0],kunci[2],enkripsi(kunci[0],kunci[1],password)))
+	# print(dekripsi(kunci[0],kunci[2],enkripsi(kunci[0],kunci[1],password)))
 	cur.execute(strQuery)
 	conn.commit()
 
