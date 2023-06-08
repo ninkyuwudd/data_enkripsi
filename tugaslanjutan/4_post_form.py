@@ -1,6 +1,7 @@
 import base64
 import math
 import codecs
+import random
 
 from flask import Flask
 from flask import jsonify
@@ -41,8 +42,6 @@ def kreate_key():
     while math.gcd(e,pn) > 1:
         e = sympy.randprime(1,pn)
 
-    print("Public key =", e)
-
     d = (pn + 1) / e
     i = 1
 
@@ -67,16 +66,15 @@ def enkripsirsa(n,p,plain):
     while len(chiper_binary) % 8 > 0:
         chiper_binary += "0"
 
-        #format ke binary ke base64
     chiper_byte = bytearray()
     for x in range(0, len(chiper_binary), 8):
         tmp = chiper_binary[x:x + 8]
         tmp = int(tmp, 2)
         chiper_byte.append(tmp)
 
-    chiper_base64 = base64.b64encode(chiper_byte)
-    return chiper_base64.decode("ascii")
-    # print("enkripsi message", chiper_base64.decode("ascii"))
+    chp64 = base64.b64encode(chiper_byte)
+    return chp64.decode("ascii")
+
 
 
 
@@ -90,13 +88,12 @@ def dekripsirsa(n,p,chp):
     for x in chiper_byte:
         chiper_binary += format(x,"08b")
 
-    #dekirpsi
     plain = ""
     for x in range(0, len(chiper_binary),l):
         x = chiper_binary[x:x + l]
         x = int(x,2)
         plain += chr(x ** p % n)
-    # print("plain text: ",plain)
+
     return plain
 
 
@@ -214,7 +211,7 @@ def login():
 	print('password: ', password)
 	print('key : ',key)
 
-	slice_key = [key[:26],key[26:]]
+	slice_key = [key[:26],key[26:28],key[28:]]
 	print(slice_key)
 	print("sudah dapat key")
 	conn = get_db_connection()
@@ -234,7 +231,7 @@ def login():
 
 	print("ngereplace aman")
 
-	create_dekrip_data = (decrypt(decryptsubti(decriptbasic(dekripsirsa(clear_n,int(slice_key[1]),cleaned_text)),slice_key[0]), 5))
+	create_dekrip_data = (decrypt(decryptsubti(decriptbasic(dekripsirsa(clear_n,int(slice_key[2]),cleaned_text)),slice_key[0]), int(slice_key[1])))
 
 	print("dekripsi aman")
 	print(cleaned_text)
@@ -279,7 +276,8 @@ def register():
 
 	kunci = kreate_key()
 	subkey= generate_key()
-	create_enrkip_data = enkripsirsa(kunci[0],kunci[1],enkripsibasic(encryptsubti(encrypt(password, 5),subkey)))
+	shift_key = random.randint(19,99)
+	create_enrkip_data = enkripsirsa(kunci[0],kunci[1],enkripsibasic(encryptsubti(encrypt(password, shift_key),subkey)))
 	
 
 	conn = get_db_connection()
@@ -289,7 +287,7 @@ def register():
 	cur.execute(strQuery)
 	conn.commit()
 
-	allkey = subkey + str(kunci[2]) 
+	allkey = subkey + str(shift_key) +str(kunci[2]) 
 
 	return jsonify({"msg": allkey})
 		
