@@ -30,12 +30,15 @@ def get_db_connection():
                             password='beginer1383')
     return conn
 
-def kreate_key():
+
+
+
+
+
+def generate_key_rsa():
     p1 = sympy.randprime(2 ** 4, 2 ** 8)
     p2 = sympy.randprime(2 ** 4, 2 ** 8)
     n = p1 * p2
-
-    print("N =", n)
     
     pn = (p1 - 1) * (p2 - 1)
     e = sympy.randprime(1, pn)
@@ -53,52 +56,63 @@ def kreate_key():
 
 
 
+def hitungpanjangbit(n):
+    len  = math.ceil(math.log2(n))
+    return len
+
+
+
+def konversiDelapanBitKeBulat(biner_chp):
+    byte_chptext = bytearray()
+    for x in range(0, len(biner_chp), 8):
+        tmp = biner_chp[x:x + 8]
+        tmp = int(tmp, 2)
+        byte_chptext.append(tmp)
+    return byte_chptext
+
 def enkripsirsa(n,p,plain):
-
-    l = math.ceil(math.log2(n))
-
     plain_byte = bytearray(plain,"utf-8")
-    chiper_binary = ""
+    biner_chp = ""
     for i in plain_byte:
         i = i ** p % n
-        chiper_binary += format(i,"0" + str(l) + "b")
+        biner_chp += format(i,"0" + str(hitungpanjangbit(n)) + "b")
 
-    while len(chiper_binary) % 8 > 0:
-        chiper_binary += "0"
+    while len(biner_chp) % 8 > 0:
+        biner_chp += "0"
 
-    chiper_byte = bytearray()
-    for x in range(0, len(chiper_binary), 8):
-        tmp = chiper_binary[x:x + 8]
-        tmp = int(tmp, 2)
-        chiper_byte.append(tmp)
-
-    chp64 = base64.b64encode(chiper_byte)
+    chp64 = base64.b64encode(konversiDelapanBitKeBulat(biner_chp))
     return chp64.decode("ascii")
 
 
-
-
-def dekripsirsa(n,p,chp):
-    l = math.ceil(math.log2(n))
-
-    chiper = chp.encode("ascii")
-    chiper_byte = base64.b64decode(chiper)
-    chiper_binary = ""
-
-    for x in chiper_byte:
-        chiper_binary += format(x,"08b")
-
+def konversiBinerKeBulat(biner_chp,n,p):
     plain = ""
-    for x in range(0, len(chiper_binary),l):
-        x = chiper_binary[x:x + l]
+    panjang_bit = hitungpanjangbit(n)
+    for x in range(0, len(biner_chp),panjang_bit):
+        x = biner_chp[x:x + panjang_bit]
         x = int(x,2)
         plain += chr(x ** p % n)
 
     return plain
 
 
+
+
+def dekripsirsa(n,p,chp):
+
+    chiper = chp.encode("ascii")
+    byte_chptext = base64.b64decode(chiper)
+    biner_chp = ""
+
+    for x in byte_chptext:
+        biner_chp += format(x,"08b")
+
+    return konversiBinerKeBulat(biner_chp,n,p)
+
+
+
+
 def generate_key():
-    # Menghasilkan kunci acak dengan mengacak urutan karakter alfabet
+    
     import random
     alphabet = "abcdefghijklmnopqrstuvwxyz"
     alphabet_list = list(alphabet)
@@ -107,7 +121,7 @@ def generate_key():
     return key
 
 def encryptsubti(plaintext, key):
-    # Mengenkripsi teks menggunakan metode substitusi
+ 
     ciphertext = ""
     for char in plaintext:
         if char.isalpha():
@@ -121,7 +135,7 @@ def encryptsubti(plaintext, key):
     return ciphertext
 
 def decryptsubti(ciphertext, key):
-    # Mendekripsi teks menggunakan metode substitusi
+ 
     plaintext = ""
     for char in ciphertext:
         if char.isalpha():
@@ -274,7 +288,7 @@ def register():
 	print('password: ', password)
 	
 
-	kunci = kreate_key()
+	kunci = generate_key_rsa()
 	subkey= generate_key()
 	shift_key = random.randint(19,99)
 	create_enrkip_data = enkripsirsa(kunci[0],kunci[1],enkripsibasic(encryptsubti(encrypt(password, shift_key),subkey)))
